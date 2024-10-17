@@ -13,8 +13,7 @@ public class TestBed extends LinearOpMode {
     private DcMotor RL = null;
     private DcMotor RR = null;
 
-    private DcMotor LLift = null;
-    private DcMotor RLift = null;
+    private DcMotor Lift = null;
 
     private DcMotor Wrist = null;
 
@@ -27,26 +26,29 @@ public class TestBed extends LinearOpMode {
         RR = hardwareMap.get(DcMotor.class, "RR");
 
         Wrist = hardwareMap.get(DcMotor.class, "Wrist");
+        Wrist.setTargetPosition(0);
         Wrist.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         Wrist.setPower(1.0);
 
-        LLift = hardwareMap.get(DcMotor.class, "LLift");
-        RLift = hardwareMap.get(DcMotor.class, "RLift");
+        Lift = hardwareMap.get(DcMotor.class, "Lift");
+        Lift.setTargetPosition(0);
+        Lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        Lift.setPower(1.0);
 
         Claw = hardwareMap.get(Servo.class, "Claw");
     }
 
     private void UpdateWheels() {
         // Get input
-        double forwardInput = -gamepad1.left_stick_y;
-        double sidewaysInput = gamepad1.left_stick_x;
+        double forwardInput = gamepad1.left_stick_x;
+        double sidewaysInput = -gamepad1.left_stick_y;
         double turnInput = gamepad1.right_stick_x;
 
         // Crazy magic math https://github.com/FIRST-Tech-Challenge/FtcRobotController/blob/master/FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/BasicOmniOpMode_Linear.java
-        double flPower  = forwardInput + sidewaysInput + turnInput;
+        double flPower  = forwardInput + sidewaysInput - turnInput;
         double frPower = forwardInput - sidewaysInput - turnInput;
         double rlPower   = forwardInput - sidewaysInput + turnInput;
-        double rrPower  = forwardInput + sidewaysInput - turnInput;
+        double rrPower  = forwardInput + sidewaysInput + turnInput;
 
         // Normalize the values
         double max = Math.max(Math.abs(flPower), Math.abs(frPower));
@@ -67,17 +69,25 @@ public class TestBed extends LinearOpMode {
         RR.setPower(rrPower);
     }
 
-    private void UpdateLift() {
-        int target = (int)map(gamepad2.left_stick_y, -1.0, 1.0, 0.0, 5000.0);
-        Wrist.setTargetPosition(target);
+    private void UpdateLift(double deltaTime) {
+        final double wristSpeed = 50.0;
+        final double liftSpeed = 200.0;
+
+        double wristPos = Wrist.getCurrentPosition();
+        double wristInput = -gamepad2.left_stick_y;
+        Wrist.setTargetPosition((int)(wristPos + wristInput * wristSpeed));
+
+        double liftPos = Lift.getCurrentPosition();
+        double liftInput = gamepad2.right_stick_y;
+        Lift.setTargetPosition((int)(liftPos + liftInput * liftSpeed));
     }
 
     double map(double x, double in_min, double in_max, double out_min, double out_max) {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
-    private boolean upDebounce = false;
-    private boolean downDebounce = false;
+    //private boolean upDebounce = false;
+    //private boolean downDebounce = false;
     private void UpdateClaw() {
         // 0.14 open 0.39 closed
 
@@ -121,9 +131,15 @@ public class TestBed extends LinearOpMode {
         waitForStart();
         telemetry.addData("Status", "Running");
 
+        long lastLoop = System.currentTimeMillis();
         while (opModeIsActive()) {
+            long currentTime = System.currentTimeMillis();
+            double deltaTime = ((double)currentTime - (double)lastLoop) / 1000.0;
+            lastLoop = currentTime;
+            telemetry.addData("DeltaTime", deltaTime);
+
             UpdateWheels();
-            UpdateLift();
+            UpdateLift(deltaTime);
             UpdateClaw();
 
             telemetry.update();
