@@ -26,23 +26,22 @@ public class TestBed extends LinearOpMode {
         RR = hardwareMap.get(DcMotor.class, "RR");
 
         Wrist = hardwareMap.get(DcMotor.class, "Wrist");
-        Wrist.setTargetPosition(0);
-        Wrist.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        Wrist.setPower(1.0);
+        Wrist.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         Lift = hardwareMap.get(DcMotor.class, "Lift");
-        Lift.setTargetPosition(0);
-        Lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        Lift.setPower(1.0);
+        Lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         Claw = hardwareMap.get(Servo.class, "Claw");
     }
 
     private void UpdateWheels() {
+        final double defaultSpeed = 0.4;
+
         // Get input
-        double forwardInput = gamepad1.left_stick_x;
-        double sidewaysInput = -gamepad1.left_stick_y;
-        double turnInput = gamepad1.right_stick_x;
+        double forwardInput = Math.pow(gamepad1.left_stick_x, 3);
+        double sidewaysInput = Math.pow(-gamepad1.left_stick_y, 3);
+        double turnInput = Math.pow(gamepad1.right_stick_x, 3);
+        double speedInput = Math.pow(gamepad1.right_trigger, 3);
 
         // Crazy magic math https://github.com/FIRST-Tech-Challenge/FtcRobotController/blob/master/FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/BasicOmniOpMode_Linear.java
         double flPower  = forwardInput + sidewaysInput - turnInput;
@@ -62,11 +61,14 @@ public class TestBed extends LinearOpMode {
             rrPower  /= max;
         }
 
+        // Calculate speed coefficient
+        double speedCoefficient = defaultSpeed + speedInput * (1.0 - defaultSpeed);
+
         // Apply the calculated power to the wheels
-        FL.setPower(flPower);
-        FR.setPower(frPower);
-        RL.setPower(rlPower);
-        RR.setPower(rrPower);
+        FL.setPower(flPower * speedCoefficient);
+        FR.setPower(frPower * speedCoefficient);
+        RL.setPower(rlPower * speedCoefficient);
+        RR.setPower(rrPower * speedCoefficient);
     }
 
     private void UpdateLift(double deltaTime) {
@@ -74,11 +76,11 @@ public class TestBed extends LinearOpMode {
         final double liftSpeed = 200.0;
 
         double wristPos = Wrist.getCurrentPosition();
-        double wristInput = -gamepad2.left_stick_y;
+        double wristInput = Math.pow(-gamepad2.left_stick_y, 3);
         Wrist.setTargetPosition((int)(wristPos + wristInput * wristSpeed));
 
         double liftPos = Lift.getCurrentPosition();
-        double liftInput = gamepad2.right_stick_y;
+        double liftInput = Math.pow(gamepad2.right_stick_y, 3);
         Lift.setTargetPosition((int)(liftPos + liftInput * liftSpeed));
     }
 
@@ -130,6 +132,14 @@ public class TestBed extends LinearOpMode {
 
         waitForStart();
         telemetry.addData("Status", "Running");
+
+        Wrist.setTargetPosition(0);
+        Wrist.setPower(1.0);
+        Wrist.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        Lift.setTargetPosition(0);
+        Lift.setPower(1.0);
+        Lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         long lastLoop = System.currentTimeMillis();
         while (opModeIsActive()) {
