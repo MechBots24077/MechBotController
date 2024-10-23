@@ -1,0 +1,3 @@
+[submodule "MechFramework"]
+	path = MechFramework
+	url = https://github.com/MechBots24077/MechFramework.git
