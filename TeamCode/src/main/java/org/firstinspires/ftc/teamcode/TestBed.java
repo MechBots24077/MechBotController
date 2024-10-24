@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.mcdanielpps.mechframework.Time;
+import com.mcdanielpps.mechframework.util.Time;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -142,12 +142,12 @@ public class TestBed extends LinearOpMode {
         Lift.setPower(1.0);
         Lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        long lastLoop = System.currentTimeMillis();
+        Time.Init();
         while (opModeIsActive()) {
-            Time.UpdateDeltaTime();
+            Time.Update();
 
             UpdateWheels();
-            UpdateLift(Time.deltaTime());
+            UpdateLift(Time.DeltaTime());
             UpdateClaw();
 
             telemetry.update();
