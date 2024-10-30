@@ -5,6 +5,7 @@ import com.mcdanielpps.mechframework.motion.MecanumWheelController;
 import com.mcdanielpps.mechframework.util.Time;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -12,7 +13,7 @@ import org.firstinspires.ftc.teamcode.motion.LiftController;
 
 @TeleOp(name="TeleOp")
 public class TeleOpMode extends LinearOpMode {
-    private Servo m_Extension = null;
+    private CRServo m_Extension = null;
     private Servo m_Claw = null;
 
     private MecanumWheelController m_WheelController = new MecanumWheelController();
@@ -27,7 +28,7 @@ public class TeleOpMode extends LinearOpMode {
         m_LiftController.LLift = hardwareMap.get(DcMotor.class, "LLift");
         m_LiftController.RLift = hardwareMap.get(DcMotor.class, "RLift");
 
-        m_Extension = hardwareMap.get(Servo.class, "Extension");
+        m_Extension = hardwareMap.get(CRServo.class, "Extension");
         m_Claw = hardwareMap.get(Servo.class, "Claw");
     }
 
@@ -41,6 +42,14 @@ public class TeleOpMode extends LinearOpMode {
             Input.ApplyFilter(gamepad1.right_stick_x),
             speedCoefficient
         );
+    }
+
+    private void ProcessLiftInput() {
+        double liftPos = m_LiftController.GetCurrentPosition();
+        double liftInput = Input.ApplyFilter(-gamepad2.left_stick_y);
+        telemetry.addData("Lift input", liftInput);
+        telemetry.addData("Lift pos", liftPos);
+        m_LiftController.MoveToPosition((int)(liftPos + liftInput * 50));
     }
 
     @Override
@@ -60,6 +69,7 @@ public class TeleOpMode extends LinearOpMode {
             Time.Update();
 
             ProcessMovementInput();
+            ProcessLiftInput();
 
             telemetry.update();
         }
