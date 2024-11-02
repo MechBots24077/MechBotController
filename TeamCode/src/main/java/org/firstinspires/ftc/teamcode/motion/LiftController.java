@@ -1,6 +1,36 @@
 package org.firstinspires.ftc.teamcode.motion;
 
+import com.mcdanielpps.mechframework.motion.MotorController;
 import com.qualcomm.robotcore.hardware.DcMotor;
+
+//public class LiftController {
+//    public MotorController LLift = null;
+//    public MotorController RLift = null;
+//
+//    public void SetMotors(DcMotor llift, DcMotor rlift) {
+//        LLift = new MotorController(llift);
+//        RLift = new MotorController(rlift);
+//    }
+//
+//    public void InitMotors() {
+//        LLift.Init();
+//        RLift.Init();
+//    }
+//
+//    public void MoveToPosition(int position) {
+//        RLift.Goal = position;
+//        LLift.Goal = -position;
+//    }
+//
+//    public void Update() {
+//        LLift.Update();
+//        RLift.Update();
+//    }
+//
+//    public int GetCurrentPosition() {
+//        return RLift.Goal;
+//    }
+//}
 
 public class LiftController {
     public DcMotor LLift = null;
