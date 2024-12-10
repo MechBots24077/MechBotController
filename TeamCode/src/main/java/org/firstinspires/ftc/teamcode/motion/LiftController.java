@@ -18,6 +18,11 @@ public class LiftController {
     }
 
     public void MoveToPosition(int position) {
+        if (position < 0.0)
+            return;
+        if (position > 4200.0)
+            return;
+
         RLift.Goal = position;
         LLift.Goal = -position;
     }

@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.motion.LiftController;
 public class TeleOpMode extends LinearOpMode {
     private CRServo m_Extension = null;
     private Servo m_Claw = null;
+    private Servo m_Wrist = null;
     private DigitalChannel m_LiftLimit = null;
 
     private MecanumWheelController m_WheelController = new MecanumWheelController();
@@ -29,6 +30,9 @@ public class TeleOpMode extends LinearOpMode {
         m_WheelController.RL = hardwareMap.get(DcMotor.class, "RL");
         m_WheelController.RR = hardwareMap.get(DcMotor.class, "RR");
         m_WheelController.InvertFL = true;
+        m_WheelController.InvertRL = true;
+        m_WheelController.InvertFR = true;
+        m_WheelController.InvertRR = true;
 
         m_LiftController.SetMotors(
                 hardwareMap.get(DcMotor.class, "LLift"),
@@ -37,6 +41,7 @@ public class TeleOpMode extends LinearOpMode {
 
         m_Extension = hardwareMap.get(CRServo.class, "Extension");
         m_Claw = hardwareMap.get(Servo.class, "Claw");
+        m_Wrist = hardwareMap.get(Servo.class, "Wrist");
         m_LiftLimit = hardwareMap.get(DigitalChannel.class, "LiftLimit");
     }
 
@@ -54,11 +59,11 @@ public class TeleOpMode extends LinearOpMode {
 
     private void ProcessLiftInput() {
         double liftPos = m_LiftController.GetCurrentGoal();
-        double liftInput = Input.ApplyFilter(-gamepad2.left_stick_y);
+        double liftInput = Input.ApplyFilter(-gamepad2.right_stick_y);
         telemetry.addData("Lift pos", m_LiftController.GetCurrentPosition());
 
 
-        m_LiftController.MoveToPosition((int)(liftPos + liftInput * 50.0 * Time.DeltaTime()));
+        m_LiftController.MoveToPosition((int)(liftPos + liftInput * 1000.0 * Time.DeltaTime()));
         m_LiftController.Update();
     }
 
@@ -80,8 +85,13 @@ public class TeleOpMode extends LinearOpMode {
 
     private void ProcessClawInput() {
         double clawInput = gamepad2.right_trigger;
+        double wristInput = gamepad2.left_trigger;
 
-        m_Claw.setPosition(map(clawInput, 0.0, 1.0, 0.32, 0.55));
+        double wristangle = map(1.0 - wristInput, 0.0, 1.0, 0.2, 0.7);
+        telemetry.addData("Angle", wristangle);
+
+        m_Claw.setPosition(map(1.0 - clawInput, 0.0, 1.0, 0.32, 0.55));
+        m_Wrist.setPosition(wristangle);
     }
 
     @Override
@@ -92,7 +102,7 @@ public class TeleOpMode extends LinearOpMode {
 
         waitForStart();
 
-        m_WheelController.InitMotors(true);
+        m_WheelController.InitMotors(false);
         m_LiftController.InitMotors();
 
         m_LiftLimit.setMode(DigitalChannel.Mode.INPUT);
