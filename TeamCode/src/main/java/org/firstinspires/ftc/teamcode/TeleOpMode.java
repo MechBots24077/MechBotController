@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.mcdanielpps.mechframework.input.Input;
 import com.mcdanielpps.mechframework.motion.MecanumWheelController;
+import com.mcdanielpps.mechframework.motion.OdometryTranslator;
 import com.mcdanielpps.mechframework.util.Time;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -22,6 +23,7 @@ public class TeleOpMode extends LinearOpMode {
     private DigitalChannel m_LiftLimit = null;
 
     private MecanumWheelController m_WheelController = new MecanumWheelController();
+    private OdometryTranslator m_OdometryTranslator = new OdometryTranslator();
     private LiftController m_LiftController = new LiftController();
 
     private void GetHardwareReferences() {
@@ -31,8 +33,10 @@ public class TeleOpMode extends LinearOpMode {
         m_WheelController.RR = hardwareMap.get(DcMotor.class, "RR");
         m_WheelController.InvertFL = true;
         m_WheelController.InvertRL = true;
-        m_WheelController.InvertFR = true;
-        m_WheelController.InvertRR = true;
+
+        m_OdometryTranslator.Left = m_WheelController.RR;
+        m_OdometryTranslator.Center = m_WheelController.RL;
+        m_OdometryTranslator.Right = m_WheelController.FL;
 
         m_LiftController.SetMotors(
                 hardwareMap.get(DcMotor.class, "LLift"),
@@ -55,6 +59,8 @@ public class TeleOpMode extends LinearOpMode {
             Input.ApplyFilter(gamepad1.right_stick_x),
             speedCoefficient
         );
+
+        m_OdometryTranslator.UpdateTelemetry(telemetry);
     }
 
     private void ProcessLiftInput() {
