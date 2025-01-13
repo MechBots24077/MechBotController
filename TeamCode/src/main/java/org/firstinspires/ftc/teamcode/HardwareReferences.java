@@ -20,8 +20,8 @@ public class HardwareReferences {
     public Servo Claw;
     public Servo Wrist;
 
-    public DigitalChannel LiftLimit;
-    public DigitalChannel ExtensionLimit;
+    //public DigitalChannel LiftLimit;
+    //public DigitalChannel ExtensionLimit;
 
     public HardwareReferences() {
         HardwareMap hardwareMap = RobotSystem.getInstance().GetHardwareMap();
@@ -38,8 +38,8 @@ public class HardwareReferences {
         Claw = hardwareMap.get(Servo.class, "Claw");
         Wrist = hardwareMap.get(Servo.class, "Wrist");
 
-        LiftLimit = hardwareMap.get(DigitalChannel.class, "LLimit");
-        ExtensionLimit = hardwareMap.get(DigitalChannel.class, "ELimit");
+        //LiftLimit = hardwareMap.get(DigitalChannel.class, "LLimit");
+        //ExtensionLimit = hardwareMap.get(DigitalChannel.class, "ELimit");
     }
 
     public DcMotor OdometryLeft() { return RR; }

@@ -1,15 +1,18 @@
 package org.firstinspires.ftc.teamcode.motion;
 
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.mcdanielpps.mechframework.motion.MotorController;
 import com.qualcomm.robotcore.hardware.DcMotor;
+
+import org.firstinspires.ftc.teamcode.RobotConfig;
 
 public class LiftController {
     public MotorController LLift = null;
     public MotorController RLift = null;
 
     public void SetMotors(DcMotor llift, DcMotor rlift) {
-        LLift = new MotorController(llift, 3.0, 1.0, 0.0);
-        RLift = new MotorController(rlift, 3.0, 1.0, 0.0);
+        LLift = new MotorController(llift, RobotConfig.PID_KP, RobotConfig.PID_KI, RobotConfig.PID_KD);
+        RLift = new MotorController(rlift, RobotConfig.PID_KP, RobotConfig.PID_KI, RobotConfig.PID_KD);
     }
 
     public void InitMotors() {
@@ -27,9 +30,11 @@ public class LiftController {
         LLift.Goal = -position;
     }
 
-    public void Update() {
-        LLift.Update();
-        RLift.Update();
+    public void Update(TelemetryPacket packet) {
+        LLift.UpdatePID(RobotConfig.PID_KP, RobotConfig.PID_KI, RobotConfig.PID_KD);
+        RLift.UpdatePID(RobotConfig.PID_KP, RobotConfig.PID_KI, RobotConfig.PID_KD);
+        LLift.Update(packet, "LLift");
+        RLift.Update(packet, "RLift");
     }
 
     public int GetCurrentPosition() {

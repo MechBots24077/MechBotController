@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.mcdanielpps.mechframework.input.Input;
 import com.mcdanielpps.mechframework.motion.MecanumWheelController;
 import com.mcdanielpps.mechframework.util.MechUtil;
@@ -65,14 +67,15 @@ public class TeleOpTask implements Task {
     }
 
     private void ProcessLiftInput() {
+        TelemetryPacket packet = RobotSystem.getInstance().GetTelemetryPacket();
         Gamepad gamepad2 = m_System.GetGamepad2();
 
         double liftPos = m_LiftController.GetCurrentGoal();
         double liftInput = -gamepad2.right_stick_y;
         m_System.GetTelemetry().addData("Lift Pos", m_LiftController.GetCurrentPosition());
 
-        m_LiftController.MoveToPosition((int)(liftPos + liftInput * 1000.0 * Time.DeltaTime()));
-        m_LiftController.Update();
+        m_LiftController.MoveToPosition((int)(liftPos + liftInput * 2000.0 * Time.DeltaTime()));
+        m_LiftController.Update(packet);
     }
 
     private void ProcessExtensionInput() {
