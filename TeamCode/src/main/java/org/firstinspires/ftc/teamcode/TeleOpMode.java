@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.mcdanielpps.mechframework.input.Input;
 import com.mcdanielpps.mechframework.motion.MecanumWheelController;
 import com.mcdanielpps.mechframework.motion.OdometryTranslator;
@@ -49,7 +51,7 @@ public class TeleOpMode extends LinearOpMode {
         m_LiftLimit = hardwareMap.get(DigitalChannel.class, "LiftLimit");
     }
 
-    private void ProcessMovementInput() {
+    private void ProcessMovementInput(TelemetryPacket packet) {
         // Map the 0-1 input from the trigger to 0.4-1
         double speedCoefficient = 0.4 + Input.ApplyFilter(gamepad1.right_trigger) * 0.6;
 
@@ -63,22 +65,22 @@ public class TeleOpMode extends LinearOpMode {
         m_OdometryTranslator.UpdateTelemetry(telemetry);
     }
 
-    private void ProcessLiftInput() {
+    private void ProcessLiftInput(TelemetryPacket packet) {
         double liftPos = m_LiftController.GetCurrentGoal();
         double liftInput = Input.ApplyFilter(-gamepad2.right_stick_y);
         telemetry.addData("Lift pos", m_LiftController.GetCurrentPosition());
 
 
-        m_LiftController.MoveToPosition((int)(liftPos + liftInput * 1000.0 * Time.DeltaTime()));
-        m_LiftController.Update();
+        m_LiftController.MoveToPosition((int)(liftPos + liftInput * 2000.0 * Time.DeltaTime()));
+        m_LiftController.Update(packet);
     }
 
-    private void ProcessExtensionInput() {
+    private void ProcessExtensionInput(TelemetryPacket packet) {
         if (gamepad2.dpad_up) {
-            m_Extension.setPower(0.3);
+            m_Extension.setPower(0.6);
             m_Extension.setDirection(DcMotorSimple.Direction.FORWARD);
         } else if (gamepad2.dpad_down) {
-            m_Extension.setPower(0.3);
+            m_Extension.setPower(0.6);
             m_Extension.setDirection(DcMotorSimple.Direction.REVERSE);
         } else {
             m_Extension.setPower(0.0);
@@ -89,7 +91,7 @@ public class TeleOpMode extends LinearOpMode {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
-    private void ProcessClawInput() {
+    private void ProcessClawInput(TelemetryPacket packet) {
         double clawInput = gamepad2.right_trigger;
         double wristInput = gamepad2.left_trigger;
 
@@ -113,14 +115,20 @@ public class TeleOpMode extends LinearOpMode {
 
         m_LiftLimit.setMode(DigitalChannel.Mode.INPUT);
 
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+
         Time.Init();
         while(opModeIsActive()) {
             Time.Update();
 
-            ProcessMovementInput();
-            ProcessLiftInput();
-            ProcessExtensionInput();
-            ProcessClawInput();
+            TelemetryPacket packet = new TelemetryPacket();
+
+            ProcessMovementInput(packet);
+            ProcessLiftInput(packet);
+            ProcessExtensionInput(packet);
+            ProcessClawInput(packet);
+
+            dashboard.sendTelemetryPacket(packet);
 
             telemetry.update();
         }
