@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.motion;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.mcdanielpps.mechframework.motion.MotorController;
+import com.mcdanielpps.mechframework.util.PIDController;
+import com.mcdanielpps.mechframework.util.Time;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.RobotConfig;
@@ -30,11 +32,42 @@ public class LiftController {
         LLift.Goal = -position;
     }
 
+//    public void Update(TelemetryPacket packet) {
+//        LLift.UpdatePID(RobotConfig.PID_KP, RobotConfig.PID_KI, RobotConfig.PID_KD);
+//        RLift.UpdatePID(RobotConfig.PID_KP, RobotConfig.PID_KI, RobotConfig.PID_KD);
+//        double lPower = LLift.Update(packet, "LLift", -1.0f);
+//        double rPower = RLift.Update(packet, "RLift", 1.0f);
+//
+//        packet.put("Motor Diff", lPower + rPower);
+//    }
+
+    private int m_CurrentPosition = 0;
+
+    private final PIDController m_PID = new PIDController(RobotConfig.PID_KP, RobotConfig.PID_KI, RobotConfig.PID_KD, 0.02, -100.0, 100.0, 0.005);
+    private long m_LastMeasurement = 0;
+
     public void Update(TelemetryPacket packet) {
-        LLift.UpdatePID(RobotConfig.PID_KP, RobotConfig.PID_KI, RobotConfig.PID_KD);
-        RLift.UpdatePID(RobotConfig.PID_KP, RobotConfig.PID_KI, RobotConfig.PID_KD);
-        LLift.Update(packet, "LLift");
-        RLift.Update(packet, "RLift");
+        long currentTime = Time.TimeGetter.currentTimeMillis();
+        if ((currentTime - m_LastMeasurement) < 5) { return; }
+        m_LastMeasurement = currentTime;
+
+        m_PID.Kp = RobotConfig.PID_KP;
+        m_PID.Ki = RobotConfig.PID_KI;
+        m_PID.Kd = RobotConfig.PID_KD;
+
+        m_CurrentPosition = RLift.Motor.getCurrentPosition();
+
+        double output = m_PID.Update((double)RLift.Goal, (double)m_CurrentPosition);
+        RLift.Motor.setPower(output / 100.0);
+        LLift.Motor.setPower(-output / 100.0);
+
+        packet.put("RLift Position", m_CurrentPosition);
+        double lPos = LLift.Motor.getCurrentPosition();
+        packet.put("LLift Position", lPos * -1.0f);
+        packet.put("Goal", RLift.Goal);
+        packet.put("Power", output / 100.0);
+
+        packet.put("Diff", m_CurrentPosition + lPos);
     }
 
     public int GetCurrentPosition() {
