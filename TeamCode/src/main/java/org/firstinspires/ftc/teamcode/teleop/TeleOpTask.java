@@ -4,6 +4,8 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.mcdanielpps.mechframework.input.Input;
 import com.mcdanielpps.mechframework.motion.MecanumWheelController;
+import com.mcdanielpps.mechframework.motion.OdometryTranslator;
+import com.mcdanielpps.mechframework.motion.RobotPosition;
 import com.mcdanielpps.mechframework.util.MechUtil;
 import com.mcdanielpps.mechframework.util.RobotSystem;
 import com.mcdanielpps.mechframework.util.Time;
@@ -25,6 +27,7 @@ public class TeleOpTask implements Task {
 
     private MecanumWheelController m_WheelController = new MecanumWheelController();
     private LiftController m_LiftController = new LiftController();
+    private OdometryTranslator m_OdometryTranslator = null;
 
     public void Init() {
         m_System = RobotSystem.getInstance();
@@ -44,15 +47,23 @@ public class TeleOpTask implements Task {
                 m_Hardware.LeftLift,
                 m_Hardware.RightLift
         );
+
+        m_OdometryTranslator = new OdometryTranslator(
+                m_Hardware.OdometryLeft(),
+                m_Hardware.OdometryCenter(),
+                m_Hardware.OdometryRight()
+        );
     }
 
     @Override
     public void Start() {
         m_WheelController.InitMotors(false);
         m_LiftController.InitMotors();
+        m_OdometryTranslator.Init();
     }
 
     private void ProcessMovementInput() {
+        TelemetryPacket packet = RobotSystem.getInstance().GetTelemetryPacket();
         Gamepad gamepad1 = m_System.GetGamepad1();
 
         // Map the 0-1 input from the trigger to 0.4-1
@@ -64,6 +75,22 @@ public class TeleOpTask implements Task {
                 Input.ApplyFilter(gamepad1.right_stick_x),
                 speedCoefficient
         );
+
+        RobotPosition currentPos = m_OdometryTranslator.Update();
+        packet.put("X (ft)", currentPos.X / 25.4);
+        packet.put("Y (ft)", currentPos.Y / 25.4);
+        packet.put("Rotation (dg)", Math.toDegrees(currentPos.Rotation));
+
+        double fieldX = currentPos.X / 25.4;
+        double fieldY = currentPos.Y / 25.4;
+
+        packet.fieldOverlay().clear();
+        packet.fieldOverlay()
+                .setFill("blue")
+                .fillCircle(fieldX, fieldY, 5.0)
+                .setFill("red")
+                .fillCircle(fieldX + Math.cos(currentPos.Rotation), fieldY + Math.sin(currentPos.Rotation), 2.0);
+
     }
 
     private void ProcessLiftInput() {
@@ -107,7 +134,7 @@ public class TeleOpTask implements Task {
     @Override
     public void Update() {
         ProcessMovementInput();
-        ProcessLiftInput();
+        //ProcessLiftInput();
         ProcessExtensionInput();
         ProcessClawInput();
     }
