@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.mcdanielpps.mechframework.input.Input;
 import com.mcdanielpps.mechframework.motion.MecanumWheelController;
@@ -9,7 +8,7 @@ import com.mcdanielpps.mechframework.motion.RobotPosition;
 import com.mcdanielpps.mechframework.util.MechUtil;
 import com.mcdanielpps.mechframework.util.RobotSystem;
 import com.mcdanielpps.mechframework.util.Time;
-import com.mcdanielpps.mechframework.util.task.Task;
+import com.mcdanielpps.mechframework.util.task.ITask;
 import com.mcdanielpps.mechframework.util.task.TaskStatus;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -17,7 +16,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.teamcode.HardwareReferences;
 import org.firstinspires.ftc.teamcode.motion.LiftController;
 
-public class TeleOpTask implements Task {
+public class TeleOpTask implements ITask {
     private TaskStatus m_Status = TaskStatus.Running;
     @Override
     public TaskStatus GetStatus() { return m_Status; }
