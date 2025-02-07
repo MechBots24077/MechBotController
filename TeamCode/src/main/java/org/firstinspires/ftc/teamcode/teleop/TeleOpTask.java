@@ -101,7 +101,7 @@ public class TeleOpTask implements ITask {
         m_System.GetTelemetry().addData("Lift Pos", m_LiftController.GetCurrentPosition());
 
         m_LiftController.MoveToPosition((int)(liftPos + liftInput * 2000.0 * Time.DeltaTime()));
-        m_LiftController.Update(packet);
+        m_LiftController.Update();
     }
 
     private void ProcessExtensionInput() {
